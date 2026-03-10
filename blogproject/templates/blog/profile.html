@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Profile - DevBlog{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+  <!-- Profile Card -->
+  <div class="md:col-span-1">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 text-center">
+      {% if user.profile.profile_picture %}
+        <img src="{{ user.profile.profile_picture.url }}" alt="Profile" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-sky-100 dark:border-sky-900"/>
+      {% else %}
+        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center mx-auto mb-4 text-white text-3xl font-bold">
+          {{ user.username|first|upper }}
+        </div>
+      {% endif %}
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ user.username }}</h2>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">{{ user.email }}</p>
+      {% if user.profile.bio %}
+        <p class="text-gray-600 dark:text-gray-300 text-sm mt-3">{{ user.profile.bio }}</p>
+      {% endif %}
+      <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+        <p class="text-2xl font-bold text-sky-600 dark:text-sky-400">{{ user_posts.count }}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Posts Written</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Form -->
+  <div class="md:col-span-2 space-y-6">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-5">Edit Profile</h3>
+      <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        {% for field in u_form %}
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ field.label }}</label>
+          <input name="{{ field.html_name }}" type="{{ field.field.widget.input_type }}" value="{{ field.value|default:'' }}"
+            class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition text-sm"/>
+          {% for error in field.errors %}<p class="text-red-500 text-xs mt-1">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
+          <textarea name="bio" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition text-sm resize-none">{{ p_form.bio.value|default:'' }}</textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Profile Picture</label>
+          {% if user.profile.profile_picture %}
+            <p class="text-xs text-gray-400 mb-2">Current: {{ user.profile.profile_picture.name }}</p>
+          {% endif %}
+          <input name="profile_picture" type="file" accept="image/*"
+            class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 dark:file:bg-sky-900/30 dark:file:text-sky-400 hover:file:bg-sky-100 transition"/>
+        </div>
+        <button type="submit" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl transition text-sm">Save Changes</button>
+      </form>
+    </div>
+
+    <!-- User Posts -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">My Posts</h3>
+      {% if user_posts %}
+        <div class="space-y-3">
+          {% for post in user_posts %}
+          <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+            <div>
+              <a href="{% url 'post_detail' post.pk %}" class="font-medium text-gray-900 dark:text-white hover:text-sky-600 dark:hover:text-sky-400 text-sm">{{ post.title }}</a>
+              <p class="text-xs text-gray-400 mt-0.5">{{ post.created_at|date:"M d, Y" }}</p>
+            </div>
+            <div class="flex gap-2">
+              <a href="{% url 'post_edit' post.pk %}" class="text-xs px-3 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-sky-200 transition">Edit</a>
+              <a href="{% url 'post_delete' post.pk %}" class="text-xs px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 transition">Delete</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-gray-500 dark:text-gray-400 text-sm">You haven't written any posts yet. <a href="{% url 'post_create' %}" class="text-sky-600 hover:underline">Write your first!</a></p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

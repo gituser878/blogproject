@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }} - DevBlog{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <a href="/" class="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-sky-600 mb-6 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    Back to Home
+  </a>
+  <article class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    {% if post.image %}
+    <img src="{{ post.image.url }}" alt="{{ post.title }}" class="w-full h-64 object-cover"/>
+    {% else %}
+    <div class="w-full h-40 bg-gradient-to-br from-sky-400 to-indigo-500"></div>
+    {% endif %}
+    <div class="p-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">{{ post.title }}</h1>
+      <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100 dark:border-gray-700">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-sky-100 dark:bg-sky-900 flex items-center justify-center text-sky-600 dark:text-sky-400 font-bold">
+            {{ post.author.username|first|upper }}
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ post.author.username }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ post.created_at|date:"F d, Y · g:i A" }}</p>
+          </div>
+        </div>
+        {% if user == post.author %}
+        <div class="flex gap-2">
+          <a href="{% url 'post_edit' post.pk %}" class="px-4 py-2 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 rounded-xl text-sm font-medium hover:bg-sky-200 transition">Edit</a>
+          <a href="{% url 'post_delete' post.pk %}" class="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium hover:bg-red-200 transition">Delete</a>
+        </div>
+        {% endif %}
+      </div>
+      <div class="prose prose-gray dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{{ post.content }}</div>
+    </div>
+  </article>
+</div>
+{% endblock %}

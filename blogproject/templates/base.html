@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}DevBlog{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#f0f9ff',100:'#e0f2fe',500:'#0ea5e9',600:'#0284c7',700:'#0369a1' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .prose p { margin-bottom: 1rem; }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-300">
+
+<!-- NAVBAR -->
+<nav class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <a href="/" class="text-xl font-bold text-sky-600 dark:text-sky-400 flex items-center gap-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+        DevBlog
+      </a>
+      <!-- Desktop Nav -->
+      <div class="hidden md:flex items-center gap-2">
+        <a href="/" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">Home</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'post_create' %}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">Create Post</a>
+          <a href="{% url 'profile' %}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">Profile</a>
+          <a href="{% url 'logout' %}" class="px-3 py-2 rounded-lg text-sm font-medium bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition">Logout</a>
+          <span class="text-sm text-gray-500 dark:text-gray-400 ml-1">Hi, {{ user.username }}</span>
+        {% else %}
+          <a href="{% url 'register' %}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">Register</a>
+          <a href="{% url 'login' %}" class="px-4 py-2 rounded-lg text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 transition">Login</a>
+        {% endif %}
+        <!-- Dark Mode Toggle -->
+        <button onclick="toggleDark()" class="ml-2 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition" title="Toggle dark mode">
+          <svg id="icon-sun" class="w-4 h-4 hidden dark:block text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 011.414-1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
+          <svg id="icon-moon" class="w-4 h-4 block dark:hidden text-gray-600" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+        </button>
+      </div>
+      <!-- Mobile menu button -->
+      <button onclick="toggleMobile()" class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden pb-3 border-t border-gray-100 dark:border-gray-700 pt-3">
+      <a href="/" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Home</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'post_create' %}" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Create Post</a>
+        <a href="{% url 'profile' %}" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Profile</a>
+        <a href="{% url 'logout' %}" class="block px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700">Logout</a>
+      {% else %}
+        <a href="{% url 'register' %}" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Register</a>
+        <a href="{% url 'login' %}" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- MESSAGES -->
+{% if messages %}
+<div class="max-w-6xl mx-auto px-4 mt-4 space-y-2">
+  {% for message in messages %}
+    <div class="flex items-center justify-between px-4 py-3 rounded-lg text-sm
+      {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300
+      {% elif message.tags == 'error' %}bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300
+      {% elif message.tags == 'info' %}bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300
+      {% else %}bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300{% endif %}">
+      <span>{{ message }}</span>
+      <button onclick="this.parentElement.remove()" class="ml-4 font-bold opacity-60 hover:opacity-100">&times;</button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- CONTENT -->
+<main class="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
+  <div class="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+    &copy; 2025 DevBlog. Built with Django &amp; Tailwind CSS.
+  </div>
+</footer>
+
+<script>
+  function toggleDark() {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+  }
+  function toggleMobile() {
+    document.getElementById('mobile-menu').classList.toggle('hidden');
+  }
+  // Persist theme
+  if (localStorage.getItem('theme') === 'dark' ||
+    (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+</body>
+</html>
